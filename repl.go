@@ -7,34 +7,14 @@ import (
 	"strings"
 )
 
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
-}
-
-func commandHelp() error {
-	fmt.Println()
-	fmt.Println("Welcome to the Pokedex!")
-	fmt.Println("Usage:")
-	fmt.Println()
-	for key, value := range commands {
-		fmt.Printf("%v: %v\n", key, value.description)
-	}
-	fmt.Println()
-	return nil
-}
-
 type cliCommand struct {
 	name        string
 	description string
 	callback    func() error
 }
 
-var commands map[string]cliCommand
-
-func init() {
-	commands = map[string]cliCommand{
+func getCommands() map[string]cliCommand {
+	return map[string]cliCommand{
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -67,7 +47,7 @@ func startRepl() {
 
 		commandName := words[0]
 
-		c, exists := commands[commandName]
+		c, exists := getCommands()[commandName]
 		if exists {
 			err := c.callback()
 			if err != nil {
