@@ -17,8 +17,11 @@ type LocationAreasResp struct {
 	} `json:"results"`
 }
 
-func ListLocations() (LocationAreasResp, error) {
+func ListLocations(pageURL *string) (LocationAreasResp, error) {
 	fullURL := baseURL + "/location-area"
+	if pageURL != nil {
+		fullURL = *pageURL
+	}
 
 	res, err := http.Get(fullURL)
 	if err != nil {
