@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
-
-	"github.com/jerslf/pokedex/internal/pokeapi"
 )
 
 func commandMap(cfg *config) error {
-	res, err := pokeapi.ListLocations(cfg.nextURL)
+	res, err := cfg.pokeapiClient.ListLocations(cfg.nextURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,7 +27,7 @@ func commandMapb(cfg *config) error {
 		return errors.New("you're on the first page")
 	}
 
-	res, err := pokeapi.ListLocations(cfg.previousURL)
+	res, err := cfg.pokeapiClient.ListLocations(cfg.previousURL)
 	if err != nil {
 		log.Fatal(err)
 	}

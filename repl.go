@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/jerslf/pokedex/internal/pokeapi"
 )
 
 type cliCommand struct {
@@ -14,8 +16,9 @@ type cliCommand struct {
 }
 
 type config struct {
-	nextURL     *string
-	previousURL *string
+	pokeapiClient pokeapi.Client
+	nextURL       *string
+	previousURL   *string
 }
 
 func getCommands() map[string]cliCommand {

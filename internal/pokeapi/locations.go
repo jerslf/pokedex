@@ -17,13 +17,33 @@ type LocationAreasResp struct {
 	} `json:"results"`
 }
 
-func ListLocations(pageURL *string) (LocationAreasResp, error) {
+func (c *Client) ListLocations(pageURL *string) (LocationAreasResp, error) {
 	fullURL := baseURL + "/location-area"
 	if pageURL != nil {
 		fullURL = *pageURL
 	}
 
-	res, err := http.Get(fullURL)
+	// check cache
+	body, ok := c.cache.Get(fullURL)
+	if ok {
+		// cache hit
+		fmt.Println("cache hit!")
+		locationAreasResp := LocationAreasResp{}
+		err := json.Unmarshal(body, &locationAreasResp)
+		if err != nil {
+			return LocationAreasResp{}, err
+		}
+		return locationAreasResp, nil
+	}
+	fmt.Println("cache miss!")
+
+	// otherwise fetch from API
+	req, err := http.NewRequest("GET", fullURL, nil)
+	if err != nil {
+		return LocationAreasResp{}, err
+	}
+
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return LocationAreasResp{}, err
 	}
@@ -32,16 +52,18 @@ func ListLocations(pageURL *string) (LocationAreasResp, error) {
 	}
 	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	if err != nil {
 		return LocationAreasResp{}, err
 	}
+
+	// save raw data in cache
+	c.cache.Add(fullURL, body)
 
 	locationAreasResp := LocationAreasResp{}
 	err = json.Unmarshal(body, &locationAreasResp)
 	if err != nil {
 		return LocationAreasResp{}, err
 	}
-
 	return locationAreasResp, nil
 }

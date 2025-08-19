@@ -1,45 +1,61 @@
 package pokecache
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+	"time"
+)
 
-func TestCreateCache(t *testing.T) {
-	cache := NewCache()
-	if cache.cache == nil {
-		t.Error("cache is nil")
+func TestAddGet(t *testing.T) {
+	const interval = 5 * time.Second
+	cases := []struct {
+		key string
+		val []byte
+	}{
+		{
+			key: "https://example.com",
+			val: []byte("testdata"),
+		},
+		{
+			key: "https://example.com/path",
+			val: []byte("moretestdata"),
+		},
+	}
+
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("Test case %v", i), func(t *testing.T) {
+			cache := NewCache(interval)
+			cache.Add(c.key, c.val)
+			val, ok := cache.Get(c.key)
+			if !ok {
+				t.Errorf("expected to find key")
+				return
+			}
+			if string(val) != string(c.val) {
+				t.Errorf("expected to find value")
+				return
+			}
+		})
 	}
 }
 
-func TestAddGetCache(t *testing.T) {
-	cache := NewCache()
+func TestReapLoop(t *testing.T) {
+	const baseTime = 5 * time.Millisecond
+	const waitTime = baseTime + 5*time.Millisecond
+	cache := NewCache(baseTime)
+	cache.Add("https://example.com", []byte("testdata"))
 
-	cases := []struct {
-		inputKey string
-		inputVal []byte
-	}{
-		{
-			inputKey: "key1",
-			inputVal: []byte("val1"),
-		},
-		{
-			inputKey: "pickachu",
-			inputVal: []byte("electric"),
-		},
-		{
-			inputKey: "",
-			inputVal: []byte(""),
-		},
+	_, ok := cache.Get("https://example.com")
+	if !ok {
+		t.Errorf("expected to find key")
+		return
 	}
 
-	for _, cas := range cases {
-		cache.Add(cas.inputKey, cas.inputVal)
-		actual, ok := cache.Get(cas.inputKey)
-		if !ok {
-			t.Errorf("%v not found", cas.inputKey)
-			continue
-		}
-		if string(actual) != string(cas.inputVal) {
-			t.Errorf("%v doesn't match %v", string(actual), cas.inputVal)
-			continue
-		}
+	time.Sleep(waitTime)
+
+	_, ok = cache.Get("https://example.com")
+	if ok {
+		t.Errorf("expected to not find key")
+		return
 	}
 }
