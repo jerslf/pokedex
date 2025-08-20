@@ -12,7 +12,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, ...string) error
 }
 
 type config struct {
@@ -43,6 +43,11 @@ func getCommands() map[string]cliCommand {
 			description: "Lists the previous page of locations",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore {loaction_area}",
+			description: "Lists Pokemon in provided location area",
+			callback:    commandExplore,
+		},
 	}
 }
 
@@ -64,10 +69,14 @@ func startRepl(cfg *config) {
 		}
 
 		commandName := words[0]
+		args := []string{}
+		if len(words) > 1 {
+			args = words[1:]
+		}
 
 		c, exists := getCommands()[commandName]
 		if exists {
-			err := c.callback(cfg)
+			err := c.callback(cfg, args...)
 			if err != nil {
 				fmt.Println(err)
 			}
