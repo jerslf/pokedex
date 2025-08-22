@@ -8,7 +8,7 @@ import (
 
 func commandExplore(cfg *config, args ...string) error {
 	if len(args) != 1 {
-		return errors.New("no loaction area provided")
+		return errors.New("no location area provided")
 	}
 
 	locationName := args[0]
